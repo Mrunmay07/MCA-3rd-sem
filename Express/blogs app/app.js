@@ -39,6 +39,11 @@ app.get("/blogs/:id", (req, res) => {
   return res.status(200).json(blog);
 });
 
+// Create blog
+app.post("/blogs" , (req , res) => {
+  // id,title , content , author , image 
+})
+
 app.listen(7000, () => {
   console.log("Server started at http://localhost:7000");
 });
