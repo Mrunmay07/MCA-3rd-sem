@@ -1,7 +1,28 @@
 import express from "express";
 import blogsData from "./blogsDB.json" with { type: "json" };
+import crypto from "crypto"
+import multer from "multer"
+import path from 'path'
+import { writeFile } from "fs/promises";
 
 const app = express();
+
+app.use(express.json())
+
+// Multer 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './uploads')
+  },
+  filename: function (req, file, cb) {
+    const id = crypto.randomUUID()
+    const extension = path.extname(file.originalname)
+   cb(null , `${id}${extension}`)
+  }
+})
+
+const upload = multer({ storage: storage })
+
 
 // GET blogs
 app.get("/blogs", (req, res) => {
@@ -39,9 +60,37 @@ app.get("/blogs/:id", (req, res) => {
   return res.status(200).json(blog);
 });
 
-// Create blog
-app.post("/blogs" , (req , res) => {
-  // id,title , content , author , image 
+// Create a Blog
+app.post("/blogs" , upload.single('image') ,async (req , res) => {
+  const {title , content , author} = req.body
+
+  if(!title || !content || !author){
+    return res.status(400).json({message : "All fields are requried"})
+  }
+
+  const blogId = crypto.randomUUID()
+
+  const newBlog = {
+    id: blogId,
+    title,
+    content,
+    author,
+    likes : 0,
+    comments : [],
+    image: req.file ? `/uploads/${req.file.filename}` : null,
+    createdAt:new Date().toISOString(),
+    updatedAt : new Date().toISOString()
+  }
+
+  blogsData.push(newBlog)
+
+ try {
+   await writeFile("./blogsDB.json" , JSON.stringify(blogsData , null , 2) )
+   return res.status(201).json({message : "Blog created successfully"})
+ } catch (err) {
+    return res.status(401).json({message : err })
+ }
+
 })
 
 app.listen(7000, () => {

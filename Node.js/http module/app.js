@@ -13,6 +13,7 @@ const server = http.createServer((req , res) => {
     else if(req.url === '/users'){
         res.end(JSON.stringify(users))
     }
+    
 })
 
 server.listen(7000 , () => {
