@@ -15,22 +15,11 @@
     "updatedAt": 1787199520579
   },
   {
-    "id": "2174f821-fc42-4489-8656-94751cf38247",
-    "title": "Cloud Computing",
-    "content": "AWS , Azure , GCP",
-    "author": "Akash",
-    "likes": 0,
-    "comments": [],
-    "image": "/uploads/f1c4aa9b-f70b-45b4-b922-0d0f502c1653.jpg",
-    "createdAt": "2026-08-20T04:23:43.169Z",
-    "updatedAt": "2026-08-20T04:23:43.170Z"
-  },
-  {
     "id": "984d250f-3246-42f4-94d9-1f59e1b75ab9",
     "title": "Redis",
     "content": "Caching Database",
     "author": "Rohit",
-    "likes": 0,
+    "likes": 2,
     "comments": [],
     "image": null,
     "createdAt": "2026-08-20T04:28:46.268Z",
