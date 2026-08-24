@@ -1,0 +1,18 @@
+[
+  {
+    "id": "4e7a2e31-7656-4d4d-ba40-3a98bdeeb255",
+    "username": "Pratham",
+    "email": "pratham@gmail.com",
+    "password": "abcde",
+    "createdAt": "2026-08-24T09:07:52.241Z",
+    "updatedAt": "2026-08-24T09:07:52.241Z"
+  },
+  {
+    "id": "1f2e10e6-bad9-4759-a394-3c95d5b86ecf",
+    "username": "Anuj",
+    "email": "anuj@gmail.com",
+    "password": 12345,
+    "createdAt": "2026-08-24T09:08:45.349Z",
+    "updatedAt": "2026-08-24T09:08:45.349Z"
+  }
+]

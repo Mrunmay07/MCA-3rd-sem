@@ -1,5 +1,6 @@
 import express from "express";
 import blogsData from "./blogsDB.json" with { type: "json" };
+import usersData from "./usersDB.json" with {type : "json"}
 import crypto from "crypto";
 import multer from "multer";
 import path from "path";
@@ -138,20 +139,80 @@ app.patch("/blogs/:id", async (req, res) => {
 });
 
 // Delete a blog -> DELETE
-app.delete("/blogs/:id" , async (req , res) => {
-  const {id} = req.params
-  const blogIndex = blogsData.findIndex((blog) => blog.id === id)
+app.delete("/blogs/:id", async (req, res) => {
+  const { id } = req.params;
+  const blogIndex = blogsData.findIndex((blog) => blog.id === id); // 2
 
-  blogsData.splice(blogIndex, 1)
+  blogsData.splice(blogIndex, 2);
 
-   try {
+  try {
     await writeFile("./blogsDB.json", JSON.stringify(blogsData, null, 2));
     return res.status(201).json({ message: "Deleted a blog" });
   } catch (err) {
     return res.status(400).json({ message: "Failed to delete a  blog" });
   }
-})
+});
 
+// Add Comment - POST
+app.post("/blogs/:id/comment", async (req, res) => {
+  const { id } = req.params;
+  const blog = blogsData.find((blog) => blog.id === id);
+  const { user, text } = req.body;
+
+   if (!blog) {
+    return res.status(404).json({ message: "Blog not found" });
+  }
+
+
+  if (!user || !text) {
+    return res.json({ message: "All fields are required!" });
+  }
+
+  const comment = {
+    id : crypto.randomUUID(),
+    user,
+    text,
+    createdAt : new Date().toISOString()
+  };
+
+  blog.comments.push(comment)
+
+  try {
+    await writeFile("./blogsDB.json", JSON.stringify(blogsData, null, 2));
+    return res.status(201).json({ message: "Comment added" });
+  } catch (err) {
+    return res.status(400).json({ message: "Failed to comment " });
+  }
+
+});
+
+// register 
+app.post("/users/register" , async (req , res) => {
+    const {username , email , password} = req.body
+
+    if(!username || !email || !password){
+      return res.json({message : "All fields are required to register"})
+    } 
+
+    const newUser = {
+      id : crypto.randomUUID(),
+      username,
+      email,
+      password,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+
+    usersData.push(newUser)
+    
+    try {
+      await writeFile("./usersDB.json" , JSON.stringify(usersData , null , 2))
+      return res.status(201).json({message : "User registered"})
+    } catch (err) {
+      return res.status(400).json({message : "User failed to register"})
+    }
+
+})
 
 
 app.listen(7000, () => {

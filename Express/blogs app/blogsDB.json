@@ -20,7 +20,20 @@
     "content": "Caching Database",
     "author": "Rohit",
     "likes": 2,
-    "comments": [],
+    "comments": [
+      {
+        "id": "bf7f6dfa-7d3c-4a97-9d39-8f3c5baad9dd",
+        "user": "Pratham",
+        "text": "Good article",
+        "createdAt": "2026-08-24T08:51:09.039Z"
+      },
+      {
+        "id": "fb25018e-1fbe-46f1-a6a2-d1b9a5b7e070",
+        "user": "Akash",
+        "text": "Achaa article hai ",
+        "createdAt": "2026-08-24T08:52:25.790Z"
+      }
+    ],
     "image": null,
     "createdAt": "2026-08-20T04:28:46.268Z",
     "updatedAt": "2026-08-20T04:28:46.269Z"
