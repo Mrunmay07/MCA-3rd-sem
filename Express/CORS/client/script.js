@@ -5,11 +5,9 @@ const userCredentials = {
 
 const res = await fetch("http://localhost:7000/login" , {
     method : "POST",
-    body : {
-      userCredentials :  JSON.stringify(userCredentials)
-    },
-    headers : {
-        email : "akash@gmail.com"
+    body : JSON.stringify(userCredentials),
+    headers:{
+        "Content-Type":"text/plain"
     }
 });
 const data = await res.json();

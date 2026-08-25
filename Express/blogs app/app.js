@@ -5,10 +5,12 @@ import crypto from "crypto";
 import multer from "multer";
 import path from "path";
 import { writeFile } from "fs/promises";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser())
 
 // Multer
 const storage = multer.diskStorage({
@@ -215,11 +217,26 @@ app.post("/users/register" , async (req , res) => {
 })
 
 
+
 // login
 app.post("/users/login" , (req , res) => {
     const {email , password} = req.body
+    if(!email || !password){
+      return res.json({message : "All fields are required"})
+    } 
+    const user = usersData.find((user) => {
+      return user.email === email && user.password === password 
+    })
+   
 
-    if()
+    if(!user){
+      return res.json({message : 'Invalid credentails'})
+    }
+
+    res.cookie("uid" , user.id)
+   console.log(req.cookies)
+    return res.json({message : "User logged in "})
+
 })
 
 

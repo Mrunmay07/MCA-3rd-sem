@@ -14,5 +14,13 @@
     "password": 12345,
     "createdAt": "2026-08-24T09:08:45.349Z",
     "updatedAt": "2026-08-24T09:08:45.349Z"
+  },
+  {
+    "id": "2d983ee0-dee3-4cd8-b6b1-ee9223f8a85a",
+    "username": "Raunak",
+    "email": "raunak@gmail.com",
+    "password": 12345,
+    "createdAt": "2026-08-25T09:42:24.853Z",
+    "updatedAt": "2026-08-25T09:42:24.854Z"
   }
 ]
