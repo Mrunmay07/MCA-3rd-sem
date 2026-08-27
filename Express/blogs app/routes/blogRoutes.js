@@ -26,12 +26,12 @@ const upload = multer({ storage: storage });
 
 
 // GET blogs
-router.get("/blogs", (req, res) => {
+router.get("/", (req, res) => {
   res.json(blogsData);
 });
 
 // GET blogs by Search
-router.get("/blogs/search", (req, res) => {
+router.get("/search", (req, res) => {
   const { s } = req.query;
 
   const filteredBlogs = blogsData.filter((blog) => {
@@ -46,7 +46,7 @@ router.get("/blogs/search", (req, res) => {
 
 // GET blogs by id
 // Dynamic route
-router.get("/blogs/:id", (req, res) => {
+router.get("/:id", (req, res) => {
   const { id } = req.params;
   const blog = blogsData.find((blog) => blog.id === id);
 
@@ -62,7 +62,7 @@ router.get("/blogs/:id", (req, res) => {
 });
 
 // Create a Blog
-router.post("/blogs", authMiddleware,upload.single("image"), async (req, res) => {
+router.post("/", authMiddleware,upload.single("image"), async (req, res) => {
   const { title, content, author } = req.body;
 
   if (!title || !content || !author) {
@@ -95,7 +95,7 @@ router.post("/blogs", authMiddleware,upload.single("image"), async (req, res) =>
 });
 
 // Likes
-router.post("/blogs/:id/likes", authMiddleware,async (req, res) => {
+router.post("/:id/likes", authMiddleware,async (req, res) => {
   const { id } = req.params;
   const blog = blogsData.find((blog) => blog.id === id);
   
@@ -125,7 +125,7 @@ router.post("/blogs/:id/likes", authMiddleware,async (req, res) => {
 // Unlike 
 
 // update blog -> PATCH
-router.patch("/blogs/:id", authMiddleware,async (req, res) => {
+router.patch("/:id", authMiddleware,async (req, res) => {
   const { id } = req.params;
   const blog = blogsData.find((blog) => blog.id === id && req.user.id === blog.userId);
 
@@ -150,7 +150,7 @@ router.patch("/blogs/:id", authMiddleware,async (req, res) => {
 } );
 
 // Delete a blog -> DELETE
-router.delete("/blogs/:id", authMiddleware,async (req, res) => {
+router.delete("/:id", authMiddleware,async (req, res) => {
   const { id } = req.params;
   const blogIndex = blogsData.findIndex((blog) => blog.id === id && req.user.id === blog.userId); // 2
 
@@ -169,7 +169,7 @@ router.delete("/blogs/:id", authMiddleware,async (req, res) => {
 });
 
 // Add Comment - POST
-router.post("/blogs/:id/comment", authMiddleware,  async (req, res) => {
+router.post("/:id/comment", authMiddleware,  async (req, res) => {
   const { id } = req.params;
   const blog = blogsData.find((blog) => blog.id === id );
   const {text } = req.body;
