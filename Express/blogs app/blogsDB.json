@@ -57,8 +57,20 @@
     "title": "Terraform",
     "content": "Devops",
     "author": "Anshul",
-    "likes": 0,
-    "comments": [],
+    "likes": [
+      {
+        "userId": "623ab33d-cc59-49d5-b1ef-228efa54b5b9"
+      }
+    ],
+    "comments": [
+      {
+        "id": "f292d5ac-f550-4a73-914f-298a3c3a647a",
+        "userId": "623ab33d-cc59-49d5-b1ef-228efa54b5b9",
+        "user": "Rakesh",
+        "text": "Good article bro",
+        "createdAt": "2026-08-27T07:56:38.367Z"
+      }
+    ],
     "image": null,
     "createdAt": "2026-08-27T06:40:20.337Z",
     "updatedAt": "2026-08-27T06:42:40.939Z"
