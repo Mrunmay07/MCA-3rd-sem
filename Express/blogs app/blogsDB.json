@@ -6,6 +6,7 @@
   },
   {
     "id": "0980a107-743a-4d25-9247-e2d0b5998749",
+    "userId": "ewqe1243qw",
     "title": "Docker",
     "content": "contenreiztions",
     "author": "Anurag",
@@ -37,5 +38,29 @@
     "image": null,
     "createdAt": "2026-08-20T04:28:46.268Z",
     "updatedAt": "2026-08-20T04:28:46.269Z"
+  },
+  {
+    "id": "9ed5718a-9628-45d7-8c3b-a29d7c52e873",
+    "userId": "623ab33d-cc59-49d5-b1ef-228efa54b5b9",
+    "title": "AI/ML",
+    "content": "machine learning",
+    "author": "Rakesh",
+    "likes": 0,
+    "comments": [],
+    "image": null,
+    "createdAt": "2026-08-27T06:38:06.230Z",
+    "updatedAt": "2026-08-27T06:38:06.230Z"
+  },
+  {
+    "id": "0962e433-ba5b-49ec-b423-8d74cd0e877f",
+    "userId": "2d87d02f-aa6c-419d-95cd-eda66f09fde6",
+    "title": "Terraform",
+    "content": "Devops",
+    "author": "Anshul",
+    "likes": 0,
+    "comments": [],
+    "image": null,
+    "createdAt": "2026-08-27T06:40:20.337Z",
+    "updatedAt": "2026-08-27T06:42:40.939Z"
   }
 ]

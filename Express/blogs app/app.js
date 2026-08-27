@@ -6,11 +6,15 @@ import multer from "multer";
 import path from "path";
 import { writeFile } from "fs/promises";
 import cookieParser from "cookie-parser";
+import authMiddleware from "./middleware/authMiddleware.js";
 
 const app = express();
 
+app.use(express.static("view")) // SSR
+
 app.use(express.json());
 app.use(cookieParser())
+
 
 // Multer
 const storage = multer.diskStorage({
@@ -63,7 +67,7 @@ app.get("/blogs/:id", (req, res) => {
 });
 
 // Create a Blog
-app.post("/blogs", upload.single("image"), async (req, res) => {
+app.post("/blogs", authMiddleware,upload.single("image"), async (req, res) => {
   const { title, content, author } = req.body;
 
   if (!title || !content || !author) {
@@ -74,6 +78,7 @@ app.post("/blogs", upload.single("image"), async (req, res) => {
 
   const newBlog = {
     id: blogId,
+    userId: req.user.id,
     title,
     content,
     author,
@@ -116,9 +121,9 @@ app.post("/blogs/:id/likes", async (req, res) => {
 // Unlike
 
 // update blog -> PATCH
-app.patch("/blogs/:id", async (req, res) => {
+app.patch("/blogs/:id", authMiddleware,async (req, res) => {
   const { id } = req.params;
-  const blog = blogsData.find((blog) => blog.id === id);
+  const blog = blogsData.find((blog) => blog.id === id && req.user.id === blog.userId);
 
   if (!blog) {
     return res.status(404).json({ message: "Blog not found" });
@@ -138,10 +143,10 @@ app.patch("/blogs/:id", async (req, res) => {
   } catch (err) {
     return res.status(400).json({ message: "Failed to Update a  blog" });
   }
-});
+} );
 
 // Delete a blog -> DELETE
-app.delete("/blogs/:id", async (req, res) => {
+app.delete("/blogs/:id", authMiddleware,async (req, res) => {
   const { id } = req.params;
   const blogIndex = blogsData.findIndex((blog) => blog.id === id); // 2
 
@@ -216,8 +221,6 @@ app.post("/users/register" , async (req , res) => {
 
 })
 
-
-
 // login
 app.post("/users/login" , (req , res) => {
     const {email , password} = req.body
@@ -228,16 +231,17 @@ app.post("/users/login" , (req , res) => {
       return user.email === email && user.password === password 
     })
    
-
     if(!user){
       return res.json({message : 'Invalid credentails'})
     }
 
     res.cookie("uid" , user.id)
-   console.log(req.cookies)
+
     return res.json({message : "User logged in "})
 
 })
+
+
 
 
 app.listen(7000, () => {
