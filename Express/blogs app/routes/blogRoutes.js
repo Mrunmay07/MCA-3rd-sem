@@ -9,7 +9,6 @@ import authMiddleware from '../middleware/authMiddleware.js'
 
 const router = express.Router()
 
-
 // Multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -63,6 +62,8 @@ router.get("/:id", (req, res) => {
 
 // Create a Blog
 router.post("/", authMiddleware,upload.single("image"), async (req, res) => {
+
+
   const { title, content, author } = req.body;
 
   if (!title || !content || !author) {
@@ -200,7 +201,5 @@ router.post("/:id/comment", authMiddleware,  async (req, res) => {
   }
 
 });
-
-
 
 export default router
