@@ -1,4 +1,4 @@
-
+/* 
 callMe()
 
 var username = "Akash" 
@@ -24,6 +24,15 @@ function callMe(){
     console.log('Hi i am called')
     callMe()
 }
+ */
 
 
+// Scoping -> Global Scope , Function Scope , block Scope
+// Exection Context
+// Call Stack , Stack Overflow
 
+
+var a = 10      // variable define
+console.log(a)  // access
+
+// Temporal Deadzone
