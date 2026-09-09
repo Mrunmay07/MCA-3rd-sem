@@ -2,6 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js"
 import blogRoutes from "./routes/blogRoutes.js"
+import dbConnect from "./db/db.js";
 
 
 const app = express();
@@ -11,6 +12,9 @@ app.use(express.static("view")) // SSR
 app.use(express.json());
 app.use(cookieParser())
 
+
+// database
+dbConnect()
 
 // Routes
 app.use("/users"  ,userRoutes )

@@ -1,10 +1,10 @@
 import express from "express";
-import blogsData from "../blogsDB.json" with { type: "json" };
 import crypto from "crypto";
 import multer from "multer";
 import path from "path";
 import { writeFile } from "fs/promises";
 import authMiddleware from '../middleware/authMiddleware.js'
+import Blog from "../models/Blog.js";
 
 
 const router = express.Router()
@@ -25,8 +25,9 @@ const upload = multer({ storage: storage });
 
 
 // GET blogs
-router.get("/", (req, res) => {
-  res.json(blogsData);
+router.get("/", async (req, res) => {
+  const blogs = await Blog.find()
+  return res.json(blogs)
 });
 
 // GET blogs by Search

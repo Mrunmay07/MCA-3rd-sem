@@ -1,5 +1,4 @@
 import express from "express"
-import usersData from "../usersDB.json" with {type : "json"}
 import { login, logout, register } from "../controllers/userController.js"
 
 
