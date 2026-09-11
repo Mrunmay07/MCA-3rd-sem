@@ -4,7 +4,7 @@ import {model , Schema} from "mongoose";
 const commentSchema = new Schema({
     userId : {
         type : Schema.Types.ObjectId,
-        ref : "users"
+        ref : "User"
     },
     username : {
         type : String,
@@ -35,7 +35,7 @@ const blogSchema = new Schema({
     },
     userId : {
         type : Schema.Types.ObjectId,
-        ref : "users"
+        ref : "User"
     },
     image : {
         type : String

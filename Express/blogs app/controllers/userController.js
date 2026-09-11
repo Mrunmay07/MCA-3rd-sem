@@ -34,8 +34,7 @@ export async function login(req , res){
       password
     })
 
-    
-   
+  
     if(!user){
       return res.json({message : 'Invalid credentails'})
     }

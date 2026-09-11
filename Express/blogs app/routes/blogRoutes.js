@@ -9,6 +9,14 @@ import Blog from "../models/Blog.js";
 
 const router = express.Router()
 
+
+// Cloudinary config
+ cloudinary.config({ 
+        cloud_name: 'pcrlbprk', 
+        api_key: '196242149374733', 
+        api_secret: 'oRUG1SUhQ7aLB7PokZx3JmROHNA' // Click 'View API Keys' above to copy your API secret
+    });
+
 // Multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -31,33 +39,40 @@ router.get("/", async (req, res) => {
 });
 
 // GET blogs by Search
-router.get("/search", (req, res) => {
+router.get("/search", async (req, res) => {
   const { s } = req.query;
 
-  const filteredBlogs = blogsData.filter((blog) => {
-    return (
-      blog.title.toLowerCase().includes(s.toLowerCase()) ||
-      blog.content.toLowerCase().includes(s.toLowerCase())
-    );
-  });
+  const blogs = await Blog.find({$or: [
+    {
+      title : {
+        $regex : s,
+        $options:"i"
+      }
+    },
+    {
+      content:{
+        $regex:s,
+        $options : "i"
+      }
+    }
+  ]})
 
-  return res.status(200).json(filteredBlogs);
+
+  return res.status(200).json(blogs);
 });
 
 // GET blogs by id
 // Dynamic route
-router.get("/:id", (req, res) => {
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
-  const blog = blogsData.find((blog) => blog.id === id);
+  
+  const blog = await Blog.findById(id)
 
   if (!blog) {
     return res.status(404).json({ message: "Blog not found" });
   }
 
-  if (!blogsData) {
-    res.status(404).json("Blog not found");
-  }
-
+  
   return res.status(200).json(blog);
 });
 
@@ -71,29 +86,30 @@ router.post("/", authMiddleware,upload.single("image"), async (req, res) => {
     return res.status(400).json({ message: "All fields are requried" });
   }
 
-  const blogId = crypto.randomUUID();
+  let imageUrl = null;
 
-  const newBlog = {
-    id: blogId,
-    userId: req.user.id,
-    title,
+  if(req.file){
+    const uploadResult = await cloudinary.uploader
+       .upload(
+           req.file.path,{
+            folder : "blog-images"
+           }
+       )
+    
+       imageUrl = uploadResult.secure_url
+      
+  }
+
+  await Blog.create({
+    title ,
     content,
     author,
-    likes: 0,
-    comments: [],
-    image: req.file ? `/uploads/${req.file.filename}` : null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  blogsData.push(newBlog);
-
-  try {
-    await writeFile("./blogsDB.json", JSON.stringify(blogsData, null, 2));
-    return res.status(201).json({ message: "Blog created successfully" });
-  } catch (err) {
-    return res.status(401).json({ message: err });
-  }
+    userId : req.user._id,
+    image : imageUrl
+  })
+  
+  return res.status(201).json({message : "Blog created successfully"})
+  
 });
 
 // Likes
