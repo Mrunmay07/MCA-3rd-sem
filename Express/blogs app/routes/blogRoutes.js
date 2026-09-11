@@ -3,19 +3,19 @@ import crypto from "crypto";
 import multer from "multer";
 import path from "path";
 import { writeFile } from "fs/promises";
-import authMiddleware from '../middleware/authMiddleware.js'
+import authMiddleware from "../middleware/authMiddleware.js";
 import Blog from "../models/Blog.js";
+import { v2 as cloudinary } from "cloudinary";
+import "dotenv/config";
 
-
-const router = express.Router()
-
+const router = express.Router();
 
 // Cloudinary config
- cloudinary.config({ 
-        cloud_name: 'pcrlbprk', 
-        api_key: '196242149374733', 
-        api_secret: 'oRUG1SUhQ7aLB7PokZx3JmROHNA' // Click 'View API Keys' above to copy your API secret
-    });
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET, // Click 'View API Keys' above to copy your API secret
+});
 
 // Multer
 const storage = multer.diskStorage({
@@ -31,32 +31,32 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-
 // GET blogs
 router.get("/", async (req, res) => {
-  const blogs = await Blog.find()
-  return res.json(blogs)
+  const blogs = await Blog.find();
+  return res.json(blogs);
 });
 
 // GET blogs by Search
 router.get("/search", async (req, res) => {
   const { s } = req.query;
 
-  const blogs = await Blog.find({$or: [
-    {
-      title : {
-        $regex : s,
-        $options:"i"
-      }
-    },
-    {
-      content:{
-        $regex:s,
-        $options : "i"
-      }
-    }
-  ]})
-
+  const blogs = await Blog.find({
+    $or: [
+      {
+        title: {
+          $regex: s,
+          $options: "i",
+        },
+      },
+      {
+        content: {
+          $regex: s,
+          $options: "i",
+        },
+      },
+    ],
+  });
 
   return res.status(200).json(blogs);
 });
@@ -65,158 +65,151 @@ router.get("/search", async (req, res) => {
 // Dynamic route
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
-  
-  const blog = await Blog.findById(id)
+
+  const blog = await Blog.findById(id);
 
   if (!blog) {
     return res.status(404).json({ message: "Blog not found" });
   }
 
-  
   return res.status(200).json(blog);
 });
 
 // Create a Blog
-router.post("/", authMiddleware,upload.single("image"), async (req, res) => {
+router.post("/", authMiddleware, upload.single("image"), async (req, res) => {
+  try {
+    const { title, content, author } = req.body;
 
+    if (!title || !content || !author) {
+      return res.status(400).json({ message: "All fields are requried" });
+    }
 
-  const { title, content, author } = req.body;
+    let imageUrl = null;
 
-  if (!title || !content || !author) {
-    return res.status(400).json({ message: "All fields are requried" });
+    if (req.file) {
+      console.log("File received", req.file);
+      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+        folder: "blogs",
+      });
+      console.log(uploadResult);
+
+      imageUrl = uploadResult.secure_url;
+    }
+
+    await Blog.create({
+      title,
+      content,
+      author,
+      userId: req.user._id,
+      image: imageUrl,
+    });
+
+    return res.status(201).json({ message: "Blog created successfully" });
+  } catch (error) {
+    console.log(error);
+    console.log(error?.message);
+
+    return res
+      .status(500)
+      .json({ message: "Failed to create a blog", error: error.message });
   }
-
-  let imageUrl = null;
-
-  if(req.file){
-    const uploadResult = await cloudinary.uploader
-       .upload(
-           req.file.path,{
-            folder : "blog-images"
-           }
-       )
-    
-       imageUrl = uploadResult.secure_url
-      
-  }
-
-  await Blog.create({
-    title ,
-    content,
-    author,
-    userId : req.user._id,
-    image : imageUrl
-  })
-  
-  return res.status(201).json({message : "Blog created successfully"})
-  
 });
 
 // Likes
-router.post("/:id/likes", authMiddleware,async (req, res) => {
+router.post("/:id/likes", authMiddleware, async (req, res) => {
   const { id } = req.params;
-  const blog = blogsData.find((blog) => blog.id === id);
-  
+
+  const blog = await Blog.findById(blog);
 
   if (!blog) {
     return res.status(404).json({ message: "Blog not found" });
   }
 
-  const alreadyLiked  = blog.likes.find((like) => like.userId === req.user.id )
+  const alreadyLiked = await Blog.findById(blog.likes.userId === req.user._id);
 
-  if(alreadyLiked){
-    return res.json({message : "You already liked this blog"})
+  if (alreadyLiked) {
+    return res.json({ message: "You already liked this blog" });
   }
 
   blog.likes.push({
-    userId : req.user.id
-  })
+    userId: req.user._id,
+  });
 
-  try {
-    await writeFile("./blogsDB.json", JSON.stringify(blogsData, null, 2));
-    return res.status(201).json({ message: "Liked a Blog" , count : blog.likes.length});
-  } catch (err) {
-    return res.status(400).json({ message: "Failed to like blog" });
-  }
+  return res.status(201).json({ messsage: "Blog Liked" });
 });
 
-// Unlike 
+// Unlike
 
 // update blog -> PATCH
-router.patch("/:id", authMiddleware,async (req, res) => {
+router.patch("/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
-  const blog = blogsData.find((blog) => blog.id === id && req.user.id === blog.userId);
 
-  if (!blog) {
-    return res.status(404).json({ message: "Blog not found" });
+  const updatedBlog = await Blog.findOneAndUpdate(
+    {
+      _id: id,
+      userId: req.user._id,
+    },
+    req.body,
+    {
+      new: true,
+    },
+  );
+
+  if (!updatedBlog) {
+    return res.status(404).json({ message: "Blog not found or unauthorized" });
   }
 
-  const { title, content, author } = req.body;
-
-  if (title !== undefined) blog.title = title;
-  if (content !== undefined) blog.content = content;
-  if (author !== undefined) blog.author = author;
-
-  blog.updatedAt = new Date().toISOString();
-
-  try {
-    await writeFile("./blogsDB.json", JSON.stringify(blogsData, null, 2));
-    return res.status(201).json({ message: "Blog Updated" });
-  } catch (err) {
-    return res.status(400).json({ message: "Failed to Update a  blog" });
-  }
-} );
+  return res.status(201).json({ message: "Blog Updated", blog: updatedBlog });
+});
 
 // Delete a blog -> DELETE
-router.delete("/:id", authMiddleware,async (req, res) => {
+router.delete("/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
-  const blogIndex = blogsData.findIndex((blog) => blog.id === id && req.user.id === blog.userId); // 2
 
-  if(blogIndex === -1){
-    return res.json({message : "Blog not found or unauthorized"})
+  const deletedBlog = await Blog.findOneAndDelete({
+    _id: id,
+    userId: req.user._id,
+  });
+
+  if (!deletedBlog) {
+    return res.json({ message: "Blog not found or Unauthorized" });
   }
 
-  blogsData.splice(blogIndex, 2);
-
-  try {
-    await writeFile("./blogsDB.json", JSON.stringify(blogsData, null, 2));
-    return res.status(201).json({ message: "Deleted a blog" });
-  } catch (err) {
-    return res.status(400).json({ message: "Failed to delete a  blog" });
-  }
+  return res.json({ message: "Blog Deleted", blog: deletedBlog });
 });
 
 // Add Comment - POST
-router.post("/:id/comment", authMiddleware,  async (req, res) => {
+router.post("/:id/comment", authMiddleware, async (req, res) => {
   const { id } = req.params;
-  const blog = blogsData.find((blog) => blog.id === id );
-  const {text } = req.body;
 
-   if (!blog) {
-    return res.status(404).json({ message: "Blog not found" });
-  }
+  const { text } = req.body;
 
   if (!text) {
     return res.json({ message: "All fields are required!" });
   }
 
-  const comment = {
-    id : crypto.randomUUID(),
-    userId : req.user.id,
-    user : req.user.username,
-    text,
-    createdAt : new Date().toISOString()
-  };
+  const updatedCommentBlog = await Blog.findByIdAndUpdate(
+    id,
+    {
+      $push: {
+        comments: {
+          userId: req.user._id,
+          username: req.user.name,
+          text,
+        },
+      },
+    },
+    {
+      new: true,
+    },
+  );
 
-  blog.comments.push(comment)
-
-  try {
-    await writeFile("./blogsDB.json", JSON.stringify(blogsData, null, 2));
-    return res.status(201).json({ message: "Comment added" });
-  } catch (err) {
-    return res.status(400).json({ message: "Failed to comment " });
+  if (!updatedCommentBlog) {
+    return res.status(404).json({ message: "Blog not found" });
   }
 
+
+  return res.json({message : "Comment added" , comment : updatedCommentBlog.comments})
 });
 
-export default router
+export default router;
