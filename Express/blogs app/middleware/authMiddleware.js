@@ -1,7 +1,7 @@
 import User from "../models/User.js"
 
 async function authMiddleware(req , res , next){
-    const uid = req.cookies.uid
+    const uid = req.signedCookies.uid
 
     if(!uid){
         return res.json({message : "Please Login first"})

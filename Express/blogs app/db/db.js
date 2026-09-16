@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
+import "dotenv/config"
 
 export default async function dbConnect() {
   try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/blogDB");
+    await mongoose.connect(process.env.MONGODB_URL);
     console.log("Database connected ✅");
   } catch (error) {
     console.log(error);

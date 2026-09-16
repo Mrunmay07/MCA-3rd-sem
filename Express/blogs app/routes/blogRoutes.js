@@ -2,7 +2,6 @@ import express from "express";
 import crypto from "crypto";
 import multer from "multer";
 import path from "path";
-import { writeFile } from "fs/promises";
 import authMiddleware from "../middleware/authMiddleware.js";
 import Blog from "../models/Blog.js";
 import { v2 as cloudinary } from "cloudinary";

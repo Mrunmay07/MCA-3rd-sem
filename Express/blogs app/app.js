@@ -3,14 +3,16 @@ import cookieParser from "cookie-parser";
 import userRoutes from "./routes/userRoutes.js"
 import blogRoutes from "./routes/blogRoutes.js"
 import dbConnect from "./db/db.js";
+import "dotenv/config"
 
 
 const app = express();
+const PORT = process.env.PORT || 8000
 
 app.use(express.static("view")) // SSR
 
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser(process.env.SECRET_KEY))
 
 
 // database
@@ -20,7 +22,7 @@ dbConnect()
 app.use("/users"  ,userRoutes )
 app.use("/blogs" , blogRoutes)
 
-app.listen(7000, () => {
-  console.log("Server started at http://localhost:7000");
+app.listen(PORT, () => {
+  console.log(`Server started at http://localhost:${PORT}`);
 });
 
