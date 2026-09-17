@@ -1,3 +1,4 @@
+import Session from "../models/Session.js";
 import User from "../models/User.js";
 import bcrypt from "bcrypt"
 
@@ -45,13 +46,19 @@ export async function login(req, res) {
     return res.json({message : "Invalid password or credentials"})
   }
 
-  res.cookie("uid", user._id, {
+  const session = await Session.create({
+    userId : user._id,
+    expiresAt : new Date( Date.now() + 24 * 60 * 60 * 1000)
+  })
+  
+
+  res.cookie("sid", session._id, {
     httpOnly: true,
     signed: true,
     maxAge: 24 * 60 * 60 * 1000,
   });
 
-  return res.json({ message: "User logged in " });
+  return res.status(200).json({ message: "User logged in " });
 }
 
 export function logout(req, res) {
