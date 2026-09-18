@@ -25,7 +25,6 @@ async function authMiddleware(req , res , next){
         return res.json({message : "Session invalid"})
     }
    
-
     req.user = user
 
     next()
