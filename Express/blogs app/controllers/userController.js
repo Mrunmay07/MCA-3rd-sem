@@ -47,7 +47,7 @@ export async function login(req, res) {
   }
 
   // Previous session delete
-  await Session.deleteOne({userId : user._id})
+  await Session.deleteMany({userId : user._id})
 
   const session = await Session.create({
     userId: user._id,
