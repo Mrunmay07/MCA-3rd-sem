@@ -96,6 +96,7 @@ router.post("/verify-otp" , async (req , res) => {
   const isValid = await bcrypt.compare(otp , storedOTP.otpHash)
 
   if(!isValid){
+    
     return res.json({message : "Invalid OTP"})
   }
 
