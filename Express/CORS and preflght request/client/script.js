@@ -4,11 +4,7 @@ const formData = {
 }
 
 const res = await fetch("http://localhost:7000/bin", {
-    method:"DELETE",
-    body: formData,
-    headers:{
-        "Content-Type" : "application/json"
-    }
+    method : "PUT"
 });
 const data = await res.json();
 console.log(data);

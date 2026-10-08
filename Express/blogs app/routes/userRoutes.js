@@ -41,19 +41,39 @@ router.post("/logout-all", authMiddleware, logoutAllDevices);
 
 // OTP generate
 router.post("/request-otp", async (req, res) => {
-  const { email } = req.body;
+  const { email , password } = req.body;
 
-  if (!email) {
+  if (!email || !password) {
     return res.json({ message: "Email is required for OTP " });
   }
 
-  const otp = crypto.randomInt(1000, 10000); // 4 digits
-  const otpHash = await bcrypt.hash(otp.toString(), 12);
+  // 1. Find User
+  const user = await User.findOne({email})
+
+  if(!user){
+    return res.status(401).json({message : "Invalid credentials"})
+  }
+
+  // 2. Verify password
+  const isPasswordValid = await bcrypt.compare(password , user.password)
+
+  if(!isPasswordValid){
+    return res.status(401).json({message : "Invalid credentials"})
+  }
+
+  // 3. Generate OTP
+  const otp = crypto.randomInt(1000 , 10000)
+
+  // 4. OTP hash
+  const otpHash = await bcrypt.hash(otp.toString() , 12)
+
+  // 5. OTP expires
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
 
+  // 6. Delete previous OTP 
   await OTP.deleteMany({ email });
 
-  // store otp
+  // 7. store otp
   await OTP.create({
     email,
     otpHash,
@@ -74,50 +94,88 @@ router.post("/request-otp", async (req, res) => {
 });
 
 // OTP verify
-router.post("/verify-otp" , async (req , res) => {
-  const { email , otp} = req.body
+router.post("/verify-otp" , async (req  ,res) => {
+  const {email , otp} = req.body
 
-  if( !email ||!otp){
-    return res.json({message : "Email and OTP is required"})
-  }
+      if (!email || !otp) {
+      return res.status(400).json({
+        message: "Email and OTP are required",
+      });
+    }
 
-  const storedOTP = await OTP.findOne({email}) // _id : "" , otpHash : , expiresAt , attempts
+    // Find OTP 
+    const storedOTP = await OTP.findOne({email})
 
-  if(!storedOTP){
-    return res.json({message : "OTP not found or expired"})
-  }
+    if (!storedOTP) {
+      return res.status(400).json({
+        message: "OTP not found or expired",
+      });
+    }
 
-  if(storedOTP.expiresAt < new Date()){
-    await OTP.findByIdAndDelete(storedOTP._id)
-    return res.json({message : "OTP expired"})
-  }
+    if(storedOTP.expiresAt < new Date()){
+      await OTP.findByIdAndDelete(storedOTP._id)
 
-  // otp validation
-  const isValid = await bcrypt.compare(otp , storedOTP.otpHash)
+      return res.status(400).json({
+        message: "OTP expired",
+      });
+    }
 
-  if(!isValid){
-    
-    return res.json({message : "Invalid OTP"})
-  }
+    // Check attempts
+    if(storedOTP.attempts >= 5){
+      await OTP.findByIdAndDelete(storedOTP._id)
+       return res.status(429).json({
+        message: "Too many incorrect attempts",
+      });
+    }
 
-  // OTP one time use
-  await OTP.findByIdAndDelete(storedOTP._id)
+     // Compare entered OTP with hash
+    const isValid = await bcrypt.compare(
+      otp.toString(),
+      storedOTP.otpHash
+    );
 
-  const user = await User.findOne({email})
+    if (!isValid) {
 
-  // session create
-  const session = await Session.create({
-    userId: user._id,
-    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-  });
+      storedOTP.attempts += 1;
+      await storedOTP.save();
 
-  res.cookie("sid", session._id, {
-    httpOnly: true,
-    signed: true,
-    maxAge: 24 * 60 * 60 * 1000,
-  });
+      return res.status(401).json({
+        message: "Invalid OTP",
+      });
+    }
 
-  return res.json({message : "OTP verified"})
+    // OTP is valid
+    await OTP.findByIdAndDelete(storedOTP._id);
+
+     // Find user
+    const user = await User.findOne({ email });
+
+
+     if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+     // Create session
+    const session = await Session.create({
+      userId: user._id,
+      expiresAt: new Date(
+        Date.now() + 24 * 60 * 60 * 1000
+      ),
+    });
+
+    // Set cookie
+    res.cookie("sid", session._id.toString(), {
+      httpOnly: true,
+      signed: true,
+      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+    });
+
+    return res.status(200).json({
+      message: "Login successful",
+    });
 
 })
 
