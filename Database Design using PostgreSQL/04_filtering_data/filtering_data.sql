@@ -164,3 +164,28 @@ SELECT * FROM actors
 WHERE
 	first_name ILIKE '_L%'
 
+
+
+
+
+
+
+
+-- IS NULL and IS NOT NULL
+SELECT * FROM actors
+WHERE 
+	date_of_birth IS NULL 
+	OR 
+	first_name IS NULL
+
+
+
+
+
+
+-- Concatenation
+SELECT 'Hello' || ' ' ||'World' AS new_string
+
+
+SELECT CONCAT_WS('-' , first_name , last_name) FROM actors
+
